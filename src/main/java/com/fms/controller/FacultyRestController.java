@@ -1,14 +1,10 @@
 package com.fms.controller;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
-import javax.websocket.server.PathParam;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,16 +22,24 @@ import com.fms.services.FacultyServices;
 @RestController
 public class FacultyRestController {
 	
-	@Autowired
 	private FacultyServices facultyServices;
 	
-	@PostMapping("/faculty")
+	private JdbcTemplate jdbc;  
+	
+	public FacultyRestController(FacultyServices facultyServices, JdbcTemplate jdbc) {
+		this.facultyServices = facultyServices;
+		this.jdbc = jdbc;
+	}
+
+	@PostMapping("/faculty") 
 	public Faculty saveFacultyData(@RequestBody Faculty faculty) {
 		return facultyServices.saveFaculty(faculty);
 	}
 	
 	@RequestMapping(value = "/faculty",method = RequestMethod.GET)
 	public List<Faculty> getFacultyData() {
+
+		System.out.println("customer information from cache");  
 		return facultyServices.getFacultyList();
 	}
 	
@@ -56,6 +60,12 @@ public class FacultyRestController {
 		return list.stream().filter(n -> n.getName().toLowerCase().contains(faculty.getName().toLowerCase())).findFirst().get();
 	}
 	
+	@PostMapping("/faculty/api")
+	public List<Faculty> searchAPIforFacultyData(@RequestBody Faculty serach) {
+		List<Faculty> list = facultyServices.getFacultyByNameOrAddress(serach);
+		return list;
+	}
+	
 	
 	@PatchMapping("/faculty")
 	public Faculty updateFacultyData(@RequestBody Faculty faculty) {
@@ -68,5 +78,11 @@ public class FacultyRestController {
 		return facultyServices.deleteByFacultyId(id);
 	}
 	
+    @RequestMapping("/insert")  
+    public String index(){  
+        jdbc.execute("insert into faculty_data(id,faculty_name,faculty_address)values(5,'javatpoint','mumbai')");  
+        return"data inserted Successfully";  
+    }  
+	 
 }
 

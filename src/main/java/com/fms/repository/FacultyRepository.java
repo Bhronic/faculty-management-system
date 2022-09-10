@@ -13,5 +13,7 @@ public interface FacultyRepository extends JpaRepository<Faculty, Integer> {
 	List<Faculty> findByName(String name);
 	
 	List<Faculty> findByAddress(String name);
+	
+	List<Faculty> findByAddressAndName(String address, String name);
 
 }
